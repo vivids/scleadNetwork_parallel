@@ -82,11 +82,15 @@ def resnet_v2(curr_image_inputs,hist_image_inputs,blocks,num_classes=None,global
         end_points_collection_curr=sc.original_name_scope+'_end_points'
         with slim.arg_scope([slim.conv2d,bottleneck,stack_blocks_dense], outputs_collections= end_points_collection_curr):
             net_curr=curr_image_inputs
+            
             if include_root_block:
-                with slim.arg_scope([slim.conv2d],activation_fn=None,normalizer_fn=None):
+#                 with slim.arg_scope([slim.conv2d],activation_fn=None,normalizer_fn=None):
 #                     net=conv2d_same(net,128,7,stride=2,scope='conv1')
-                        net_curr=conv2d_same(net_curr,128,7,stride=2,scope='conv1')
-                net_curr=slim.max_pool2d(net_curr, [3,3], stride=2, scope='pool1')
+                net_curr=conv2d_same(net_curr,16,3,stride=2,scope='conv1')
+                net_curr=conv2d_same(net_curr,32,3,stride=1,scope='conv2')
+                net_curr=conv2d_same(net_curr,64,3,stride=1,scope='conv3')
+                net_curr=slim.max_pool2d(net_curr, [3,3], stride=2, scope='pool1')    
+            
             net_curr=stack_blocks_dense(net_curr,blocks)
             net_curr=slim.batch_norm(net_curr,activation_fn=tf.nn.relu,scope='postnorm')
             if global_pool:
@@ -99,11 +103,15 @@ def resnet_v2(curr_image_inputs,hist_image_inputs,blocks,num_classes=None,global
         end_points_collection_hist=sc.original_name_scope+'_end_points'
         with slim.arg_scope([slim.conv2d,bottleneck,stack_blocks_dense], outputs_collections= end_points_collection_hist):
             net_hist=hist_image_inputs
+            
             if include_root_block:
-                with slim.arg_scope([slim.conv2d],activation_fn=None,normalizer_fn=None):
+#                 with slim.arg_scope([slim.conv2d],activation_fn=None,normalizer_fn=None):
 #                     net=conv2d_same(net,128,7,stride=2,scope='conv1')
-                        net_hist=conv2d_same(net_hist,128,7,stride=2,scope='conv1')
+                net_hist=conv2d_same(net_hist,16,3,stride=2,scope='conv1')
+                net_hist=conv2d_same(net_hist,32,3,stride=1,scope='conv2')
+                net_hist=conv2d_same(net_hist,64,3,stride=1,scope='conv3')
                 net_hist=slim.max_pool2d(net_hist, [3,3], stride=2, scope='pool1')
+        
             net_hist=stack_blocks_dense(net_hist,blocks)
             net_hist=slim.batch_norm(net_hist,activation_fn=tf.nn.relu,scope='postnorm')
             if global_pool:
@@ -116,8 +124,9 @@ def resnet_v2(curr_image_inputs,hist_image_inputs,blocks,num_classes=None,global
     net=tf.reshape(net, [net_shape[0],net_shape[3]]) 
     
     if num_classes is not None:
-        net = slim.fully_connected(net, 512, scope='fc1')
-        net = slim.fully_connected(net, num_classes, scope='fc2')
+#         net = slim.fully_connected(net, 512, scope='fc1')
+#         net = slim.fully_connected(net, 256, scope='fc2')
+        net = slim.fully_connected(net, num_classes, scope='fc1')
 #                 net=slim.conv2d(net,num_classes,[1,1],activation_fn=None,normalizer_fn=None,scope='logits')
 #                 end_points = slim.utils.convert_collection_to_dict(end_points_collection)
 #                 end_points['prediction']=slim.softmax(net,scope='predictions')
